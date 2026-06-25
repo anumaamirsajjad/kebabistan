@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kebabistan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght=500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brown-dark:#241208;
+    --brown:#3e2415;
+    --brown-mid:#5c3a26;
+    --brown-border: #442a1b;
+    --beige:#f3e7d3;
+    --cream:#fdf8ee;
+    --gold:#c9982f;
+    --gold-light:#e3bd6c;
+    --text-dark:#2a1a10;
+    --text-light:#f8efe0;
+    --text-muted:#cdb89e;
+    --shadow: 0 20px 50px rgba(36,18,8,0.25);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Poppins',sans-serif;
+    background:var(--cream);
+    color:var(--text-dark);
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.brand{font-family:'Playfair Display',serif;}
+  a{text-decoration:none;color:inherit;}
+  ul{list-style:none;}
+  img{max-width:100%;display:block;}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px;}
+  .section-tag{
+    display:inline-block;color:var(--gold);font-weight:600;letter-spacing:3px;
+    text-transform:uppercase;font-size:13px;margin-bottom:14px;
+  }
+  .section-title{font-size:clamp(28px,4vw,46px);font-weight:700;color:var(--brown-dark);margin-bottom:18px;line-height:1.2;}
+  .section-sub{color:#6b5440;max-width:600px;line-height:1.7;font-size:15.5px;}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:50px;
+    background:var(--gold);color:var(--brown-dark);font-weight:600;border:none;cursor:pointer;
+    font-size:14px;letter-spacing:1px;text-transform:uppercase;transition:.35s ease;
+  }
+  .btn:hover{background:var(--gold-light);transform:translateY(-3px);box-shadow:0 10px 25px rgba(201,152,47,.4);}
+  .btn-outline{background:transparent;border:1.5px solid var(--text-light);color:var(--text-light);}
+  .btn-outline:hover{background:var(--text-light);color:var(--brown-dark);}
+
+  /* ===== NAV ===== */
+  nav{
+    position:fixed;top:0;left:0;width:100%;z-index:1000;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:20px 5%;transition:.4s ease;background:transparent;
+  }
+  nav.scrolled{
+    background:rgba(36,18,8,.94);
+    backdrop-filter:blur(12px);
+    padding:14px 5%;
+    box-shadow:0 5px 25px rgba(0,0,0,.25);
+    border-bottom: 1px solid rgba(201,152,47,0.18);
+  }
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand{font-size:24px;font-weight:700;color:var(--text-light);letter-spacing:1px;}
+  .brand span{color:var(--gold-light);}
+  .nav-links{display:flex;gap:34px;}
+  .nav-links a{color:var(--text-light);font-size:14.5px;font-weight:500;position:relative;}
+  .nav-links a::after{content:'';position:absolute;bottom:-6px;left:0;width:0;height:2px;background:var(--gold-light);transition:.3s;}
+  .nav-links a:hover::after{width:100%;}
+  .burger{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:1100;}
+  .burger span{width:26px;height:2.5px;background:var(--text-light);border-radius:2px;}
+
+  /* ===== HERO ===== */
+  .hero{
+    height:100vh;position:relative;display:flex;align-items:center;justify-content:center;
+    text-align:center;overflow:hidden;
+  }
+  .hero-bg{
+    position:absolute;inset:0;width:100%;height:120%;
+    background:url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+    z-index:0;
+  }
+  .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(36,18,8,.55),rgba(36,18,8,.85));z-index:1;}
+  .hero-content{position:relative;z-index:2;color:var(--text-light);padding:0 20px;}
+  .hero-content .section-tag{color:var(--gold-light);}
+  .hero-content h1{font-size:clamp(42px,8vw,96px);font-weight:800;line-height:1.05;margin-bottom:18px;}
+  .hero-content h1 em{color:var(--gold-light);font-style:normal;}
+  .hero-content p{font-size:17px;max-width:520px;margin:0 auto 34px;opacity:.9;line-height:1.7;}
+  .hero-btns{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+  .scroll-indicator{
+    position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:2;
+    color:var(--text-light);font-size:12px;letter-spacing:2px;text-transform:uppercase;
+    display:flex;flex-direction:column;align-items:center;gap:8px;opacity:.8;
+  }
+  .scroll-line{width:1px;height:40px;background:var(--gold-light);position:relative;overflow:hidden;}
+  .scroll-line::after{content:'';position:absolute;top:0;left:0;width:100%;height:50%;background:var(--text-light);animation:scrollMove 1.8s infinite;}
+  @keyframes scrollMove{0%{transform:translateY(-100%);}100%{transform:translateY(200%);}}
+
+  /* ===== ABOUT ===== */
+  .about{padding:130px 0;background:var(--cream);}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center;}
+  .about-imgs{position:relative;height:460px;}
+  .about-imgs img{position:absolute;border-radius:14px;object-fit:cover;box-shadow:var(--shadow);}
+  .about-img-1{width:70%;height:75%;top:0;left:0;z-index:2;}
+  .about-img-2{width:55%;height:55%;bottom:0;right:0;border:8px solid var(--cream);z-index:1;}
+  .about-stats{display:flex;gap:40px;margin-top:36px;}
+  .stat-num{font-size:34px;font-weight:800;color:var(--gold);font-family:'Playfair Display',serif;}
+  .stat-label{font-size:13px;color:#6b5440;text-transform:uppercase;letter-spacing:1px;}
+
+  /* ===== MENU & ORDERING ===== */
+  .menu{padding:130px 0;background:var(--brown-dark);color:var(--text-light);}
+  .menu .section-sub{color:#cdb89e;}
+  .menu-head{text-align:center;margin-bottom:50px;}
+  .menu-head .section-sub{margin:0 auto;}
+  
+  .menu-tabs-nav {
+    display: flex; justify-content: center; gap: 14px; margin-bottom: 44px; flex-wrap: wrap;
+  }
+  .menu-tab-btn {
+    background: transparent; border: 1.5px solid var(--text-light); color: var(--text-light);
+    padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: .3s;
+    text-transform: uppercase; font-size: 12.5px; letter-spacing: 0.5px;
+  }
+  .menu-tab-btn:hover, .menu-tab-btn.active {
+    background: var(--gold); border-color: var(--gold); color: var(--brown-dark);
+  }
+
+  .menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;}
+  .menu-card{
+    position:relative;border-radius:16px;overflow:hidden;height:350px;
+    box-shadow:0 15px 35px rgba(0,0,0,.35); background: var(--brown);
+  }
+  .menu-card img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+  .menu-card-overlay{
+    position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(36,18,8,.98));
+    display:flex;flex-direction:column;justify-content:flex-end;padding:22px;transition:.4s;
+  }
+  .menu-card h3{font-size:20px;color:var(--text-light);margin-bottom:6px;}
+  .menu-card p{font-size:12px;color:var(--text-muted);opacity:0;max-height:0;transition:.4s;overflow:hidden;line-height:1.5;}
+  .menu-card:hover img{transform:scale(1.12);}
+  .menu-card:hover p{opacity:1;max-height:80px;margin-top:6px;}
+  .menu-card-tag{
+    position:absolute;top:18px;left:18px;background:var(--gold);color:var(--brown-dark);
+    font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;
+    z-index: 5;
+  }
+  .add-to-cart-action-btn {
+    background: var(--gold); border: none; border-radius: 20px; color: var(--brown-dark);
+    font-weight: 700; padding: 6px 18px; font-size: 12px; cursor: pointer; transition: .3s;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .add-to-cart-action-btn:hover {
+    background: var(--gold-light); transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(201, 152, 47, 0.3);
+  }
+  .add-to-cart-action-btn.out-of-stock {
+    background: #555; color: #aaa; cursor: not-allowed; transform: none; box-shadow: none;
+  }
+
+  /* ===== FLOATING CART BADGE ===== */
+  .cart-floating-badge {
+    position: fixed; bottom: 30px; right: 30px; z-index: 999;
+    width: 60px; height: 60px; border-radius: 50%; background: var(--gold);
+    color: var(--brown-dark); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .cart-floating-badge:hover {
+    transform: scale(1.1) translateY(-3px); background: var(--gold-light);
+  }
+  .cart-icon-wrapper { position: relative; display: flex; }
+  .cart-count-bubble {
+    position: absolute; top: -14px; right: -14px; background: #e53935; color: white;
+    font-size: 11px; font-weight: 700; min-width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; border: 2px solid var(--gold);
+  }
+
+  /* ===== CART DRAWER ===== */
+  .cart-drawer-overlay {
+    position: fixed; inset: 0; background: rgba(26, 14, 6, 0.7);
+    backdrop-filter: blur(5px); opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease; z-index: 1090;
+  }
+  .cart-drawer-overlay.open { opacity: 1; pointer-events: auto; }
+  .cart-drawer {
+    position: fixed; top: 0; right: -420px; width: 420px; max-width: 95vw; height: 100vh;
+    background: var(--brown-dark); border-left: 1px solid var(--brown-border);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5); z-index: 1100; display: flex; flex-direction: column;
+    transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1); color: var(--text-light);
+  }
+  .cart-drawer.open { right: 0; }
+  .cart-drawer-header {
+    padding: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cart-drawer-header h3 { font-size: 22px; font-weight: 700; color: #fff; }
+  .close-cart-btn {
+    background: transparent; border: none; font-size: 30px; color: var(--text-muted);
+    cursor: pointer; transition: .3s;
+  }
+  .close-cart-btn:hover { color: var(--gold-light); }
+  .cart-drawer-body {
+    flex-grow: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 24px;
+  }
+  .cart-items-list { display: flex; flex-direction: column; gap: 16px; }
+  .cart-item-row {
+    display: flex; gap: 14px; align-items: center; padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .cart-item-row img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+  .cart-item-info { flex-grow: 1; }
+  .cart-item-name { font-weight: 600; font-size: 14.5px; color: #fff; }
+  .cart-item-price { font-size: 13px; color: var(--gold-light); margin-top: 2px; }
+  .cart-item-qty { display: flex; align-items: center; gap: 10px; }
+  .qty-btn {
+    width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--text-muted);
+    background: transparent; color: var(--text-light); display: flex; align-items: center;
+    justify-content: center; cursor: pointer; font-size: 14px; transition: .3s;
+  }
+  .qty-btn:hover { background: var(--gold); border-color: var(--gold); color: var(--brown-dark); }
+  .qty-val { font-size: 14px; font-weight: 600; min-width: 16px; text-align: center; }
+  .cart-item-remove {
+    background: transparent; border: none; color: #e57373; cursor: pointer; transition: .3s;
+    display: flex; align-items: center;
+  }
+  .cart-item-remove:hover { color: #ff1744; }
+
+  .cart-form-section { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+  .order-type-tabs {
+    display: flex; border: 1.5px solid rgba(255,255,255,0.1); border-radius: 30px;
+    overflow: hidden; margin-bottom: 8px;
+  }
+  .type-tab {
+    flex: 1; padding: 10px; background: transparent; border: none; color: var(--text-light);
+    font-weight: 600; font-size: 13px; cursor: pointer; transition: .3s; text-transform: uppercase;
+  }
+  .type-tab.active { background: var(--gold); color: var(--brown-dark); }
+  .cart-form-group { display: flex; flex-direction: column; gap: 6px; }
+  .cart-form-group label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .cart-form-group input, .cart-form-group select {
+    padding: 10px 14px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px;
+    background: rgba(0,0,0,0.2); color: var(--text-light); font-family: inherit; font-size: 13.5px;
+    outline: none; transition: .3s;
+  }
+  .cart-form-group input:focus, .cart-form-group select:focus { border-color: var(--gold); }
+  
+  .cart-drawer-footer {
+    padding: 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(0,0,0,0.15);
+  }
+  .price-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+  .price-row.total-row { font-size: 18px; font-weight: 700; color: #fff; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; }
+  .price-row.total-row span:last-child { color: var(--gold-light); }
+  .place-order-btn { width: 100%; justify-content: center; margin-top: 16px; padding: 14px; font-size: 14.5px; }
+  .cart-msg { text-align: center; font-size: 13.5px; margin-top: 12px; min-height: 18px; font-weight: 600; }
+  .empty-cart-view { text-align: center; padding: 60px 0; color: var(--text-muted); }
+  .empty-cart-view svg { color: rgba(255,255,255,0.05); margin-bottom: 12px; }
+
+  /* ===== GALLERY ===== */
+  .gallery{padding:130px 0;background:var(--beige);}
+  .gallery-head{text-align:center;margin-bottom:50px;}
+  .gallery-head .section-sub{margin:0 auto;}
+  .slider-wrap{position:relative;max-width:1100px;margin:0 auto;overflow:hidden;border-radius:20px;box-shadow:var(--shadow);}
+  .slider-track{display:flex;transition:transform .6s cubic-bezier(.65,0,.35,1);}
+  .slide{flex:0 0 100%;height:520px;position:relative;}
+  .slide img{width:100%;height:100%;object-fit:cover;}
+  .slide-caption{
+    position:absolute;bottom:0;left:0;right:0;padding:30px;color:#fff;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.7));font-family:'Playfair Display',serif;font-size:22px;
+  }
+  .slider-btn{
+    position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;
+    background:rgba(255,255,255,.85);border:none;cursor:pointer;font-size:18px;color:var(--brown-dark);
+    z-index:5;transition:.3s;display:flex;align-items:center;justify-content:center;
+  }
+  .slider-btn:hover{background:var(--gold);color:#fff;}
+  .slider-prev{left:18px;}
+  .slider-next{right:18px;}
+  .slider-dots{display:flex;justify-content:center;gap:10px;margin-top:22px;}
+  .dot{width:9px;height:9px;border-radius:50%;background:#c9b79b;cursor:pointer;transition:.3s;}
+  .dot.active{background:var(--gold);width:26px;border-radius:5px;}
+
+  /* ===== RESERVATION ===== */
+  .reservation{
+    padding:130px 0;background:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1600&q=80') center/cover fixed;
+    position:relative;
+  }
+  .reservation::before{content:'';position:absolute;inset:0;background:rgba(36,18,8,.82);}
+  .res-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1.1fr;gap:60px;align-items:center;}
+  .res-grid .section-tag{color:var(--gold-light);}
+  .res-grid h2{color:var(--text-light);}
+  .res-grid p{color:#dcc9b0;line-height:1.8;}
+  .res-perks{margin-top:30px;display:flex;flex-direction:column;gap:14px;}
+  .res-perks li{display:flex;align-items:center;gap:12px;color:var(--text-light);font-size:14.5px;}
+  .res-perks svg{flex-shrink:0;color:var(--gold-light);}
+  .res-form{
+    background:var(--cream);border-radius:18px;padding:42px;box-shadow:var(--shadow);
+  }
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .form-group{display:flex;flex-direction:column;gap:6px;}
+  .form-group label{font-size:12.5px;font-weight:600;color:var(--brown);text-transform:uppercase;letter-spacing:.5px;}
+  .form-group input,.form-group select{
+    padding:13px 14px;border:1.5px solid #e3d6bd;border-radius:10px;font-family:inherit;font-size:14px;
+    background:#fff;color:var(--text-dark);outline:none;transition:.3s;
+  }
+  .form-group input:focus,.form-group select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,152,47,.15);}
+  .res-form .btn{width:100%;justify-content:center;margin-top:10px;}
+  .form-msg{margin-top:14px;font-size:13.5px;text-align:center;font-weight:600;min-height:18px;}
+
+  /* ===== TESTIMONIALS ===== */
+  .testimonials{padding:130px 0;background:var(--cream);text-align:center;}
+  .testimonials .section-sub{margin:0 auto;}
+  .test-wrap{max-width:720px;margin:60px auto 0;position:relative;min-height:220px;}
+  .test-slide{position:absolute;inset:0;opacity:0;transition:.6s ease;pointer-events:none;}
+  .test-slide.active{opacity:1;pointer-events:auto;}
+  .stars{color:var(--gold);font-size:18px;margin-bottom:18px;letter-spacing:3px;}
+  .test-text{font-size:19px;font-style:italic;line-height:1.8;color:var(--brown);margin-bottom:24px;font-family:'Playfair Display',serif;}
+  .test-person img{width:56px;height:56px;border-radius:50%;object-fit:cover;margin:0 auto 10px;border:3px solid var(--gold-light);}
+  .test-name{font-weight:700;color:var(--brown-dark);}
+  .test-role{font-size:12.5px;color:#8a7158;}
+  .test-nav{display:flex;justify-content:center;gap:10px;margin-top:34px;}
+
+  /* ===== LOCATIONS ===== */
+  .locations{padding:130px 0;background:var(--beige);}
+  .loc-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:40px;}
+  .loc-list{display:flex;flex-direction:column;gap:18px;}
+  .loc-card{
+    background:#fff;border-radius:14px;padding:22px;cursor:pointer;border:2px solid transparent;
+    transition:.3s;box-shadow:0 8px 22px rgba(36,18,8,.08);
+  }
+  .loc-card.active{border-color:var(--gold);}
+  .loc-card h3{font-size:18px;margin-bottom:6px;color:var(--brown-dark);}
+  .loc-card p{font-size:13.5px;color:#7a6248;line-height:1.6;}
+  .loc-map{border-radius:14px;overflow:hidden;box-shadow:var(--shadow);min-height:420px;}
+  .loc-map iframe{width:100%;height:100%;min-height:420px;border:0;}
+
+  /* ===== CONTACT ===== */
+  .contact{padding:120px 0;background:var(--brown-dark);color:var(--text-light);text-align:center;}
+  .contact .section-sub{color:#cdb89e;margin:0 auto;}
+  .contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:54px;}
+  .contact-card{
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;
+    padding:36px 20px;transition:.35s;
+  }
+  .contact-card:hover{background:rgba(201,152,47,.12);transform:translateY(-6px);border-color:var(--gold);}
+  .contact-icon{
+    width:54px;height:54px;border-radius:50%;background:var(--gold);display:flex;align-items:center;
+    justify-content:center;margin:0 auto 16px;color:var(--brown-dark);
+  }
+  .contact-card h4{font-size:16px;margin-bottom:6px;}
+  .contact-card p{font-size:14px;color:#cdb89e;}
+  .social-row{display:flex;gap:16px;justify-content:center;margin-top:50px;}
+  .social-row a{
+    width:46px;height:46px;border-radius:50%;border:1.5px solid var(--gold-light);
+    display:flex;align-items:center;justify-content:center;color:var(--gold-light);transition:.3s;
+  }
+  .social-row a:hover{background:var(--gold-light);color:var(--brown-dark);transform:translateY(-4px);}
+
+  /* ===== FOOTER ===== */
+  footer{background:#1a0e06;color:#cdb89e;padding:70px 0 26px;}
+  .foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;margin-bottom:50px;}
+  .foot-grid h4{color:var(--text-light);font-size:16px;margin-bottom:18px;font-family:'Playfair Display',serif;}
+  .foot-grid p{font-size:14px;line-height:1.8;}
+  .foot-links{display:flex;flex-direction:column;gap:10px;}
+  .foot-links a{font-size:14px;transition:.3s;}
+  .foot-links a:hover{color:var(--gold-light);padding-left:4px;}
+  .foot-bottom{
+    border-top:1px solid rgba(255,255,255,.08);padding-top:24px;display:flex;
+    justify-content:space-between;font-size:12.5px;flex-wrap:wrap;gap:10px;
+  }
+
+  /* ===== REVEAL ANIM BASE ===== */
+  .reveal{opacity:0;transform:translateY(50px);}
+
+  /* ===== RESPONSIVE ===== */
+  @media(max-width:900px){
+    .nav-links{display:none;}
+    .burger{display:flex;}
+    .about-grid,.res-grid,.loc-grid{grid-template-columns:1fr;}
+    .menu-grid{grid-template-columns:repeat(2,1fr);}
+    .contact-grid{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr 1fr;}
+    .about-imgs{height:340px;margin-bottom:10px;}
+    .form-row{grid-template-columns:1fr;}
+  }
+  @media(max-width:560px){
+    .menu-grid{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr;}
+    .hero-btns{flex-direction:column;}
+  }
+
+  .mobile-menu{
+    position:fixed;top:0;right:-100%;width:75%;max-width:320px;height:100vh;background:var(--brown-dark);
+    z-index:1050;padding:90px 30px;transition:.4s ease;box-shadow:-10px 0 30px rgba(0,0,0,.3);
+  }
+  .mobile-menu.open{right:0;}
+  .mobile-menu a{display:block;color:var(--text-light);font-size:18px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="logo-container">
+    <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(-15deg); filter: drop-shadow(0 2px 5px rgba(0,0,0,0.35));">
+      <line x1="20" y1="80" x2="80" y2="20" stroke="#e3bd6c" stroke-width="6" stroke-linecap="round"/>
+      <rect x="42" y="42" width="16" height="16" rx="4" transform="rotate(45 50 50)" fill="#c9982f" stroke="#241208" stroke-width="2.5"/>
+      <rect x="58" y="26" width="12" height="12" rx="3" transform="rotate(45 64 32)" fill="#c9982f" stroke="#241208" stroke-width="2"/>
+      <path d="M28 72C24 64 25 53 32 46C34 50 37 52 39 49C35 40 41 29 49 25C48 33 51 40 58 42C60 33 71 29 73 37C77 50 73 65 62 73C50 81 37 79 28 72Z" fill="url(#logoFlameGradNav)" opacity="0.95"/>
+      <defs>
+        <linearGradient id="logoFlameGradNav" x1="50" y1="25" x2="50" y2="75" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#ffb74d"/>
+          <stop offset="50%" stop-color="#ff7043"/>
+          <stop offset="100%" stop-color="#d84315"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="brand">Kebab<span>istan</span></div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#reservation">Reserve</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#locations">Locations</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="burger" id="burger"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#about">About</a>
+  <a href="#menu">Menu</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#reservation">Reserve</a>
+  <a href="#testimonials">Reviews</a>
+  <a href="#locations">Locations</a>
+  <a href="#contact">Contact</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="section-tag">Est. 2009 · Modern Kebab House</span>
+    <h1>Fire, Spice <br><em>& Soul</em></h1>
+    <p>Handcrafted kebabs and grills, slow-marinated overnight and finished over open flame — a taste of tradition reimagined.</p>
+    <div class="hero-btns">
+      <a href="#menu" class="btn">Order Online</a>
+      <a href="#reservation" class="btn btn-outline">Reserve a Table</a>
+    </div>
+  </div>
+  <div class="scroll-indicator"><span>Scroll</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="container about-grid">
+    <div class="about-imgs reveal">
+      <img class="about-img-1" src="https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=800&q=80" alt="Chef preparing kebab">
+      <img class="about-img-2" src="https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80" alt="Food spread">
+    </div>
+    <div class="reveal">
+      <span class="section-tag">Our Story</span>
+      <h2 class="section-title">A Legacy Grilled to Perfection</h2>
+      <p class="section-sub">For over 15 years, Kebabistan has brought together time-honoured recipes and modern culinary technique. Every skewer is hand-prepared by our master grill chefs using fresh, locally-sourced ingredients and a secret blend of spices passed down through generations.</p>
+      <p class="section-sub" style="margin-top:14px;">From sizzling seekh kebabs to slow-roasted BBQ platters, we serve more than food — we serve an experience rooted in warmth and hospitality.</p>
+      <div class="about-stats">
+        <div><div class="stat-num">15+</div><div class="stat-label">Years of Flavor</div></div>
+        <div><div class="stat-num">40k+</div><div class="stat-label">Happy Guests</div></div>
+        <div><div class="stat-num">12</div><div class="stat-label">Signature Dishes</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section class="menu" id="menu">
+  <div class="container">
+    <div class="menu-head reveal">
+      <span class="section-tag">Order Online</span>
+      <h2 class="section-title">Explore Our Menu</h2>
+      <p class="section-sub">Savor our masterfully seasoned, flame-grilled specialities delivered directly to your doorstep.</p>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="menu-tabs-nav reveal">
+      <button class="menu-tab-btn active" data-category="all">All Dishes</button>
+      <button class="menu-tab-btn" data-category="Seekh & Tikka">Seekh & Tikka</button>
+      <button class="menu-tab-btn" data-category="BBQ Platters">BBQ Platters</button>
+      <button class="menu-tab-btn" data-category="Shawarma & Wraps">Shawarma & Wraps</button>
+      <button class="menu-tab-btn" data-category="Biryani & Rice">Biryani & Rice</button>
+    </div>
+
+    <div class="menu-grid" id="menuItemsGrid">
+      <!-- Loaded dynamically via JavaScript -->
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery" id="gallery">
+  <div class="container">
+    <div class="gallery-head reveal">
+      <span class="section-tag">Visual Feast</span>
+      <h2 class="section-title">Inside Kebabistan</h2>
+      <p class="section-sub">A glimpse of our kitchen, our flames, and the dishes that define us.</p>
+    </div>
+    <div class="slider-wrap reveal">
+      <div class="slider-track" id="sliderTrack">
+        <div class="slide"><img src="https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=1200&q=80" alt="Grill flames"><div class="slide-caption">Live Flame Grilling</div></div>
+        <div class="slide"><img src="https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=1200&q=80" alt="Food spread on table"><div class="slide-caption">Feast for Sharing</div></div>
+        <div class="slide"><img src="https://images.unsplash.com/photo-1432139509613-5c4255815697?auto=format&fit=crop&w=1200&q=80" alt="Plated dish"><div class="slide-caption">Plated with Care</div></div>
+        <div class="slide"><img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80" alt="Restaurant interior"><div class="slide-caption">Our Warm Dining Room</div></div>
+      </div>
+      <button class="slider-btn slider-prev" id="prevBtn">&#8592;</button>
+      <button class="slider-btn slider-next" id="nextBtn">&#8594;</button>
+    </div>
+    <div class="slider-dots" id="sliderDots"></div>
+  </div>
+</section>
+
+<!-- RESERVATION -->
+<section class="reservation" id="reservation">
+  <div class="container res-grid">
+    <div class="reveal">
+      <span class="section-tag">Book a Table</span>
+      <h2 class="section-title">Reserve Your Experience</h2>
+      <p>Join us for an evening of fire-grilled flavor. Reservations are recommended, especially on weekends.</p>
+      <ul class="res-perks">
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Free cancellation up to 2 hours before</li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Private dining for groups of 8+</li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Instant confirmation by email</li>
+      </ul>
+    </div>
+    <form class="res-form reveal" id="resForm">
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input type="text" name="name" required placeholder="Your name"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" name="phone" required placeholder="03xx-xxxxxxx"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date</label><input type="date" name="date" required id="resDate"></div>
+        <div class="form-group"><label>Time</label><input type="time" name="time" required value="19:00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Guests</label>
+          <select name="guests" required>
+            <option value="1">1 Guest</option><option value="2">2 Guests</option><option value="3" selected>3 Guests</option>
+            <option value="4">4 Guests</option><option value="5">5+ Guests</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Location</label>
+          <select name="location" required>
+            <option>Gulberg, Lahore</option><option>DHA, Lahore</option><option>Bahria Town, Lahore</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn">Confirm Reservation</button>
+      <div class="form-msg" id="formMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Guest Reviews</span>
+      <h2 class="section-title">What People Are Saying</h2>
+    </div>
+    <div class="test-wrap" id="testWrap">
+      <div class="test-slide active">
+        <div class="stars">★★★★★</div>
+        <p class="test-text">"The seekh kebabs here are unmatched — smoky, juicy, and full of flavor. The ambience makes it perfect for family dinners."</p>
+        <div class="test-person">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" alt="Customer">
+          <div class="test-name">Hira Khan</div><div class="test-role">Food Blogger</div>
+        </div>
+      </div>
+      <div class="test-slide">
+        <div class="stars">★★★★★</div>
+        <p class="test-text">"Best BBQ platter in the city, hands down. The staff are warm and the service is incredibly fast even on busy nights."</p>
+        <div class="test-person">
+          <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80" alt="Customer">
+          <div class="test-name">Ahmed Raza</div><div class="test-role">Regular Guest</div>
+        </div>
+      </div>
+      <div class="test-slide">
+        <div class="stars">★★★★★</div>
+        <p class="test-text">"We hosted a private dinner here and it was flawless. The shawarma wraps and biryani were the highlight of the night."</p>
+        <div class="test-person">
+          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80" alt="Customer">
+          <div class="test-name">Sara Malik</div><div class="test-role">Event Planner</div>
+        </div>
+      </div>
+    </div>
+    <div class="test-nav" id="testNav"></div>
+  </div>
+</section>
+
+<!-- LOCATIONS -->
+<section class="locations" id="locations">
+  <div class="container">
+    <div class="reveal" style="margin-bottom:50px;">
+      <span class="section-tag">Find Us</span>
+      <h2 class="section-title">Our Locations</h2>
+      <p class="section-sub">Visit any of our branches across Lahore.</p>
+    </div>
+    <div class="loc-grid">
+      <div class="loc-list reveal">
+        <div class="loc-card active" data-lat="31.5099" data-lng="74.3436">
+          <h3>Gulberg Branch</h3>
+          <p>MM Alam Road, Gulberg III, Lahore<br>Open Daily · 12 PM – 1 AM</p>
+        </div>
+        <div class="loc-card" data-lat="31.4697" data-lng="74.4142">
+          <h3>DHA Branch</h3>
+          <p>Phase 4, DHA, Lahore<br>Open Daily · 1 PM – 1 AM</p>
+        </div>
+        <div class="loc-card" data-lat="31.3705" data-lng="74.1815">
+          <h3>Bahria Town Branch</h3>
+          <p>Civic Centre, Bahria Town, Lahore<br>Open Daily · 12 PM – 12 AM</p>
+        </div>
+      </div>
+      <div class="loc-map reveal">
+        <iframe id="mapFrame" loading="lazy" src="https://www.google.com/maps?q=31.5099,74.3436&z=14&output=embed"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Get In Touch</span>
+      <h2 class="section-title">Contact Kebabistan</h2>
+      <p class="section-sub">Questions, feedback or catering requests — we'd love to hear from you.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-card reveal">
+        <div class="contact-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <h4>Call Us</h4><p>+92 300 1234567</p>
+      </div>
+      <div class="contact-card reveal">
+        <div class="contact-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></div>
+        <h4>Email Us</h4><p>hello@kebabistan.com</p>
+      </div>
+      <div class="contact-card reveal">
+        <div class="contact-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <h4>Visit Us</h4><p>3 Locations in Lahore</p>
+      </div>
+    </div>
+    <div class="social-row">
+      <a href="#" aria-label="Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.9v-7H8v-2.9h2.5V9.7c0-2.5 1.5-3.9 3.7-3.9 1 0 2.1.2 2.1.2v2.5h-1.2c-1.2 0-1.6.8-1.6 1.6v1.9H16l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"/></svg></a>
+      <a href="#" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+      <a href="#" aria-label="Twitter"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23 4.7a8.7 8.7 0 0 1-2.4.7 4.3 4.3 0 0 0 1.9-2.4 8.6 8.6 0 0 1-2.7 1 4.3 4.3 0 0 0-7.3 3.9A12.2 12.2 0 0 1 3.1 3.2a4.3 4.3 0 0 0 1.3 5.7 4.2 4.2 0 0 1-1.9-.5 4.3 4.3 0 0 0 3.4 4.2 4.3 4.3 0 0 1-1.9.1 4.3 4.3 0 0 0 4 3 8.7 8.7 0 0 1-6.4 1.8 12.2 12.2 0 0 0 6.6 1.9c7.9 0 12.2-6.5 12.2-12.2v-.6A8.7 8.7 0 0 0 23 4.7z"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="logo-container" style="margin-bottom:14px;">
+          <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(-15deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
+            <line x1="20" y1="80" x2="80" y2="20" stroke="#e3bd6c" stroke-width="6" stroke-linecap="round"/>
+            <rect x="42" y="42" width="16" height="16" rx="4" transform="rotate(45 50 50)" fill="#c9982f" stroke="#1a0e06" stroke-width="2.5"/>
+            <rect x="58" y="26" width="12" height="12" rx="3" transform="rotate(45 64 32)" fill="#c9982f" stroke="#1a0e06" stroke-width="2"/>
+            <path d="M28 72C24 64 25 53 32 46C34 50 37 52 39 49C35 40 41 29 49 25C48 33 51 40 58 42C60 33 71 29 73 37C77 50 73 65 62 73C50 81 37 79 28 72Z" fill="url(#logoFlameGradFoot)" opacity="0.9"/>
+            <defs>
+              <linearGradient id="logoFlameGradFoot" x1="50" y1="25" x2="50" y2="75" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffb74d"/>
+                <stop offset="50%" stop-color="#ff7043"/>
+                <stop offset="100%" stop-color="#d84315"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="brand" style="color:#fdf8ee;">Kebab<span style="color:var(--gold-light);">istan</span></div>
+        </div>
+        <p>Fire-grilled tradition, modern hospitality. Serving Lahore since 2009.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <div class="foot-links">
+          <a href="#about">About Us</a><a href="#menu">Menu</a><a href="#gallery">Gallery</a><a href="#reservation">Reservation</a>
+        </div>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <div class="foot-links">
+          <a href="#testimonials">Reviews</a><a href="#locations">Locations</a><a href="#contact">Contact</a>
+        </div>
+      </div>
+      <div>
+        <h4>Hours</h4>
+        <p>Mon – Sun<br>12:00 PM – 1:00 AM</p>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Kebabistan. All rights reserved.</span>
+      <span>Crafted with fire & flavor.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- FLOATING CART BUTTON -->
+<div class="cart-floating-badge" id="cartBadge" style="display: none;">
+  <div class="cart-icon-wrapper">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="9" cy="21" r="1"></circle>
+      <circle cx="20" cy="21" r="1"></circle>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+    </svg>
+    <span class="cart-count-bubble" id="cartCount">0</span>
+  </div>
+</div>
+
+<!-- CART DRAWER DRAWER -->
+<div class="cart-drawer-overlay" id="cartDrawerOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <h3>Your Order</h3>
+    <button class="close-cart-btn" id="closeCartBtn">&times;</button>
+  </div>
+  <div class="cart-drawer-body">
+    <div class="cart-items-list" id="cartItemsList">
+      <!-- Dynamic cart items -->
+    </div>
+    
+    <div class="cart-form-section" id="cartFormSection">
+      <div class="order-type-tabs">
+        <button class="type-tab active" id="typeTabDelivery">Delivery</button>
+        <button class="type-tab" id="typeTabPickup">Pickup</button>
+      </div>
+
+      <div class="cart-form-group">
+        <label>Select Branch</label>
+        <select id="orderBranch">
+          <option value="Gulberg, Lahore">Gulberg Branch, Lahore</option>
+          <option value="DHA, Lahore">DHA Branch, Lahore</option>
+          <option value="Bahria Town, Lahore">Bahria Town Branch, Lahore</option>
+        </select>
+      </div>
+
+      <div class="cart-form-group" id="addressGroup">
+        <label>Delivery Address</label>
+        <input type="text" id="orderAddress" placeholder="Street name, Area, House #">
+      </div>
+
+      <div class="cart-form-group">
+        <label>Your Name</label>
+        <input type="text" id="orderName" required placeholder="Full Name">
+      </div>
+
+      <div class="cart-form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="orderPhone" required placeholder="03xx-xxxxxxx">
+      </div>
+    </div>
+  </div>
+  <div class="cart-drawer-footer">
+    <div class="price-row"><span>Subtotal</span><span id="priceSubtotal">0 PKR</span></div>
+    <div class="price-row" id="deliveryFeeRow"><span>Delivery Fee</span><span id="priceDelivery">150 PKR</span></div>
+    <div class="price-row total-row"><span>Grand Total</span><span id="priceTotal">0 PKR</span></div>
+    <button class="btn place-order-btn" id="placeOrderBtn">Confirm Order</button>
+    <div class="cart-msg" id="cartMsg"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* NAV scroll state */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', ()=>{
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+/* Mobile menu */
+const burger = document.getElementById('burger');
+const mobileMenu = document.getElementById('mobileMenu');
+burger.addEventListener('click', ()=> mobileMenu.classList.toggle('open'));
+mobileMenu.querySelectorAll('a').forEach(a=>a.addEventListener('click', ()=> mobileMenu.classList.remove('open')));
+
+/* Hero parallax */
+gsap.to('#heroBg', {
+  yPercent: 18, ease:'none',
+  scrollTrigger:{ trigger:'.hero', start:'top top', end:'bottom top', scrub:true }
+});
+gsap.from('.hero-content', {opacity:0, y:40, duration:1.1, ease:'power3.out', delay:.3});
+gsap.from('.scroll-indicator', {opacity:0, duration:1, delay:1});
+
+/* Generic reveal animation */
+document.querySelectorAll('.reveal').forEach((el)=>{
+  gsap.fromTo(el, {opacity:0, y:50}, {
+    opacity:1, y:0, duration:1, ease:'power3.out',
+    scrollTrigger:{ trigger:el, start:'top 85%' }
+  });
+});
+
+/* Stagger contact cards */
+gsap.fromTo('.contact-card', {opacity:0, y:40}, {
+  opacity:1, y:0, duration:.7, stagger:.15, ease:'power3.out',
+  scrollTrigger:{ trigger:'.contact-grid', start:'top 85%' }
+});
+
+/* ===== GALLERY SLIDER ===== */
+const track = document.getElementById('sliderTrack');
+const slides = track.children;
+const dotsWrap = document.getElementById('sliderDots');
+let current = 0;
+for(let i=0;i<slides.length;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=> goToSlide(i));
+  dotsWrap.appendChild(d);
+}
+function goToSlide(i){
+  current = (i+slides.length)%slides.length;
+  track.style.transform = `translateX(-${current*100}%)`;
+  [...dotsWrap.children].forEach((d,idx)=> d.classList.toggle('active', idx===current));
+}
+document.getElementById('prevBtn').addEventListener('click', ()=> goToSlide(current-1));
+document.getElementById('nextBtn').addEventListener('click', ()=> goToSlide(current+1));
+let sliderInterval = setInterval(()=> goToSlide(current+1), 5000);
+
+/* ===== TESTIMONIALS ===== */
+const testSlides = document.querySelectorAll('.test-slide');
+const testNav = document.getElementById('testNav');
+let tCurrent = 0;
+testSlides.forEach((s,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=> goToTest(i));
+  testNav.appendChild(d);
+});
+function goToTest(i){
+  testSlides[tCurrent].classList.remove('active');
+  testNav.children[tCurrent].classList.remove('active');
+  tCurrent = (i+testSlides.length)%testSlides.length;
+  testSlides[tCurrent].classList.add('active');
+  testNav.children[tCurrent].classList.add('active');
+}
+setInterval(()=> goToTest(tCurrent+1), 6000);
+
+/* ===== LOCATIONS ===== */
+const locCards = document.querySelectorAll('.loc-card');
+const mapFrame = document.getElementById('mapFrame');
+locCards.forEach(card=>{
+  card.addEventListener('click', ()=>{
+    locCards.forEach(c=>c.classList.remove('active'));
+    card.classList.add('active');
+    const lat = card.dataset.lat, lng = card.dataset.lng;
+    mapFrame.src = `https://www.google.com/maps?q=${lat},${lng}&z=14&output=embed`;
+  });
+});
+
+/* ===== RESERVATION FORM ===== */
+const resDate = document.getElementById('resDate');
+resDate.min = new Date().toISOString().split('T')[0];
+
+const resForm = document.getElementById('resForm');
+const formMsg = document.getElementById('formMsg');
+resForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  formMsg.style.color = 'var(--brown)';
+  formMsg.textContent = 'Submitting your reservation...';
+  const btn = resForm.querySelector('button');
+  btn.disabled = true;
+
+  const formData = new FormData(resForm);
+  const data = {
+    name: formData.get('name'),
+    phone: formData.get('phone'),
+    date: formData.get('date'),
+    time: formData.get('time'),
+    guests: parseInt(formData.get('guests')),
+    location: formData.get('location')
+  };
+
+  try{
+    const res = await fetch('/api/reservations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    const result = await res.json();
+    if (!res.ok) {
+      throw new Error(result.error || 'Server error');
+    }
+    
+    formMsg.style.color = '#2f7a3d';
+    formMsg.textContent = `✓ Reservation request received! We'll confirm via SMS shortly. Booking Ref: #${result.id}`;
+    resForm.reset();
+    resDate.min = new Date().toISOString().split('T')[0];
+  }catch(err){
+    formMsg.style.color = '#b3261e';
+    formMsg.textContent = err.message || 'Something went wrong. Please call us directly.';
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+/* ===== ONLINE ORDERING SYSTEM IMPLEMENTATION ===== */
+let menuItems = [];
+let cart = [];
+let fulfillmentType = 'delivery'; // 'delivery' or 'pickup'
+
+// DOM Elements
+const menuItemsGrid = document.getElementById('menuItemsGrid');
+const cartBadge = document.getElementById('cartBadge');
+const cartCount = document.getElementById('cartCount');
+const cartDrawer = document.getElementById('cartDrawer');
+const cartDrawerOverlay = document.getElementById('cartDrawerOverlay');
+const closeCartBtn = document.getElementById('closeCartBtn');
+const cartItemsList = document.getElementById('cartItemsList');
+
+const typeTabDelivery = document.getElementById('typeTabDelivery');
+const typeTabPickup = document.getElementById('typeTabPickup');
+const addressGroup = document.getElementById('addressGroup');
+const deliveryFeeRow = document.getElementById('deliveryFeeRow');
+
+const priceSubtotal = document.getElementById('priceSubtotal');
+const priceDelivery = document.getElementById('priceDelivery');
+const priceTotal = document.getElementById('priceTotal');
+const placeOrderBtn = document.getElementById('placeOrderBtn');
+const cartMsg = document.getElementById('cartMsg');
+
+const orderBranch = document.getElementById('orderBranch');
+const orderAddress = document.getElementById('orderAddress');
+const orderName = document.getElementById('orderName');
+const orderPhone = document.getElementById('orderPhone');
+
+// Fetch menu items from backend
+async function loadMenu() {
+  try {
+    const res = await fetch('/api/menu');
+    if (!res.ok) throw new Error('Failed to load menu');
+    menuItems = await res.json();
+    renderMenu('all');
+  } catch (err) {
+    console.error('Menu load error:', err);
+    menuItemsGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--gold-light);">Failed to load menu items. Please try refreshing.</div>`;
+  }
+}
+
+// Render dynamic menu items based on filter category
+function renderMenu(categoryFilter) {
+  menuItemsGrid.innerHTML = '';
+  
+  const filtered = categoryFilter === 'all' 
+    ? menuItems 
+    : menuItems.filter(item => item.category === categoryFilter);
+
+  if (filtered.length === 0) {
+    menuItemsGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px 0;">No items available in this category.</div>`;
+    return;
+  }
+
+  filtered.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'menu-card';
+    
+    // Check stock status
+    const isAvailable = item.available === 1;
+    const isBestseller = item.name.includes('Seekh') || item.name.includes('Special');
+
+    card.innerHTML = `
+      ${isBestseller ? `<span class="menu-card-tag">Bestseller</span>` : ''}
+      <img src="${item.image_url}" alt="${item.name}">
+      <div class="menu-card-overlay">
+        <h3>${item.name}</h3>
+        <p>${item.description}</p>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; position:relative; z-index:10;">
+          <span style="font-weight:700; color:var(--gold-light); font-size:18px;">${item.price} PKR</span>
+          ${isAvailable 
+            ? `<button class="add-to-cart-action-btn" onclick="event.stopPropagation(); addToCart(${item.id})">Add</button>` 
+            : `<button class="add-to-cart-action-btn out-of-stock" disabled>Sold Out</button>`
+          }
+        </div>
+      </div>
+    `;
+    menuItemsGrid.appendChild(card);
+  });
+}
+
+// Tab Category selector listener
+document.querySelectorAll('.menu-tab-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    document.querySelectorAll('.menu-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderMenu(btn.dataset.category);
+  });
+});
+
+// Shopping Cart Actions
+function addToCart(itemId) {
+  const item = menuItems.find(i => i.id === itemId);
+  if (!item) return;
+
+  const existing = cart.find(c => c.id === itemId);
+  if (existing) {
+    existing.quantity++;
+  } else {
+    cart.push({ ...item, quantity: 1 });
+  }
+
+  updateCartUI();
+  
+  // Stagger scale effect on cart badge
+  gsap.fromTo(cartBadge, {scale: 0.8}, {scale: 1, duration: 0.4, ease: 'back.out(2)'});
+}
+
+// Qty adjuster
+function updateQty(itemId, change) {
+  const existing = cart.find(c => c.id === itemId);
+  if (!existing) return;
+
+  existing.quantity += change;
+  if (existing.quantity <= 0) {
+    cart = cart.filter(c => c.id !== itemId);
+  }
+  updateCartUI();
+}
+
+function removeFromCart(itemId) {
+  cart = cart.filter(c => c.id !== itemId);
+  updateCartUI();
+}
+
+function updateCartUI() {
+  cartItemsList.innerHTML = '';
+  
+  let totalItems = 0;
+  let subtotal = 0;
+
+  if (cart.length === 0) {
+    cartBadge.style.display = 'none';
+    cartDrawer.classList.remove('open');
+    cartDrawerOverlay.classList.remove('open');
+    return;
+  }
+
+  cartBadge.style.display = 'flex';
+  
+  cart.forEach(item => {
+    totalItems += item.quantity;
+    subtotal += item.price * item.quantity;
+
+    const row = document.createElement('div');
+    row.className = 'cart-item-row';
+    row.innerHTML = `
+      <img src="${item.image_url}" alt="${item.name}">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">${item.price} PKR</div>
+      </div>
+      <div class="cart-item-qty">
+        <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
+        <span class="qty-val">${item.quantity}</span>
+        <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart(${item.id})">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </button>
+    `;
+    cartItemsList.appendChild(row);
+  });
+
+  cartCount.textContent = totalItems;
+  priceSubtotal.textContent = `${subtotal} PKR`;
+  
+  const deliveryFee = fulfillmentType === 'delivery' ? 150 : 0;
+  priceDelivery.textContent = `${deliveryFee} PKR`;
+  
+  const grandTotal = subtotal + deliveryFee;
+  priceTotal.textContent = `${grandTotal} PKR`;
+}
+
+// Drawer Toggle triggers
+cartBadge.addEventListener('click', () => {
+  cartDrawer.classList.add('open');
+  cartDrawerOverlay.classList.add('open');
+});
+
+closeCartBtn.addEventListener('click', () => {
+  cartDrawer.classList.remove('open');
+  cartDrawerOverlay.classList.remove('open');
+});
+
+cartDrawerOverlay.addEventListener('click', () => {
+  cartDrawer.classList.remove('open');
+  cartDrawerOverlay.classList.remove('open');
+});
+
+// Fulfillment Tabs listeners
+typeTabDelivery.addEventListener('click', () => {
+  fulfillmentType = 'delivery';
+  typeTabDelivery.classList.add('active');
+  typeTabPickup.classList.remove('active');
+  addressGroup.style.display = 'flex';
+  deliveryFeeRow.style.display = 'flex';
+  orderAddress.required = true;
+  updateCartUI();
+});
+
+typeTabPickup.addEventListener('click', () => {
+  fulfillmentType = 'pickup';
+  typeTabPickup.classList.add('active');
+  typeTabDelivery.classList.remove('active');
+  addressGroup.style.display = 'none';
+  deliveryFeeRow.style.display = 'none';
+  orderAddress.required = false;
+  updateCartUI();
+});
+
+// Order Submission API request
+placeOrderBtn.addEventListener('click', async () => {
+  cartMsg.style.color = 'var(--text-light)';
+  cartMsg.textContent = 'Processing order...';
+  
+  const name = orderName.value.trim();
+  const phone = orderPhone.value.trim();
+  const branch = orderBranch.value;
+  const address = orderAddress.value.trim();
+
+  if (!name || !phone || (fulfillmentType === 'delivery' && !address)) {
+    cartMsg.style.color = '#ff1744';
+    cartMsg.textContent = 'Please fill out all required checkout fields.';
+    return;
+  }
+
+  const payload = {
+    customer_name: name,
+    customer_phone: phone,
+    type: fulfillmentType,
+    address: fulfillmentType === 'delivery' ? address : null,
+    branch: branch,
+    items: cart.map(item => ({
+      menu_item_id: item.id,
+      quantity: item.quantity
+    }))
+  };
+
+  placeOrderBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Checkout failed');
+
+    cartMsg.style.color = '#81c784';
+    cartMsg.textContent = `✓ Order placed successfully! Ref ID: #${result.id}. Preparing shortly.`;
+    
+    // Clear forms and cart state
+    cart = [];
+    orderName.value = '';
+    orderPhone.value = '';
+    orderAddress.value = '';
+    
+    setTimeout(() => {
+      updateCartUI();
+      cartMsg.textContent = '';
+    }, 4000);
+
+  } catch (err) {
+    cartMsg.style.color = '#ff1744';
+    cartMsg.textContent = err.message || 'Error processing order.';
+  } finally {
+    placeOrderBtn.disabled = false;
+  }
+});
+
+// On Load
+loadMenu();
+</script>
+</body>
+</html>
