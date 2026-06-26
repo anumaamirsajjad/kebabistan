@@ -53,11 +53,14 @@
   nav{
     position:fixed;top:0;left:0;width:100%;z-index:1000;
     display:flex;justify-content:space-between;align-items:center;
-    padding:20px 5%;transition:.4s ease;background:transparent;
+    padding:20px 5%;
+    transition: background-color 0.4s ease, padding 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease;
+    background:transparent;
   }
   nav.scrolled{
     background:rgba(36,18,8,.94);
     backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
     padding:14px 5%;
     box-shadow:0 5px 25px rgba(0,0,0,.25);
     border-bottom: 1px solid rgba(201,152,47,0.18);
@@ -324,6 +327,19 @@
   .test-role{font-size:12.5px;color:#8a7158;}
   .test-nav{display:flex;justify-content:center;gap:10px;margin-top:34px;}
 
+  /* ===== REVIEW FORM ===== */
+  .review-form-container { max-width:600px; margin: 40px auto 0; background: #fff; padding: 30px; border-radius: 12px; box-shadow: var(--shadow); display: none; }
+  .review-form-container.active { display: block; }
+  .review-form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; text-align: left; }
+  .review-form-group label { font-size: 13px; font-weight: 600; color: var(--brown); text-transform: uppercase; }
+  .review-form-group input, .review-form-group select, .review-form-group textarea {
+    padding: 12px; border: 1.5px solid #e3d6bd; border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; transition: .3s;
+  }
+  .review-form-group input:focus, .review-form-group select:focus, .review-form-group textarea:focus { border-color: var(--gold); }
+  .review-form-group textarea { resize: vertical; min-height: 80px; }
+  .leave-review-btn { margin-top: 30px; background: transparent; border: 2px solid var(--gold); color: var(--brown-dark); padding: 10px 24px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: .3s; }
+  .leave-review-btn:hover { background: var(--gold); color: #fff; }
+
   /* ===== LOCATIONS ===== */
   .locations{padding:130px 0;background:var(--beige);}
   .loc-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:40px;}
@@ -574,32 +590,38 @@
       <h2 class="section-title">What People Are Saying</h2>
     </div>
     <div class="test-wrap" id="testWrap">
-      <div class="test-slide active">
-        <div class="stars">★★★★★</div>
-        <p class="test-text">"The seekh kebabs here are unmatched — smoky, juicy, and full of flavor. The ambience makes it perfect for family dinners."</p>
-        <div class="test-person">
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" alt="Customer">
-          <div class="test-name">Hira Khan</div><div class="test-role">Food Blogger</div>
-        </div>
-      </div>
-      <div class="test-slide">
-        <div class="stars">★★★★★</div>
-        <p class="test-text">"Best BBQ platter in the city, hands down. The staff are warm and the service is incredibly fast even on busy nights."</p>
-        <div class="test-person">
-          <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80" alt="Customer">
-          <div class="test-name">Ahmed Raza</div><div class="test-role">Regular Guest</div>
-        </div>
-      </div>
-      <div class="test-slide">
-        <div class="stars">★★★★★</div>
-        <p class="test-text">"We hosted a private dinner here and it was flawless. The shawarma wraps and biryani were the highlight of the night."</p>
-        <div class="test-person">
-          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80" alt="Customer">
-          <div class="test-name">Sara Malik</div><div class="test-role">Event Planner</div>
-        </div>
-      </div>
+      <!-- Dynamic reviews go here -->
     </div>
     <div class="test-nav" id="testNav"></div>
+    
+    <div class="reveal">
+      <button class="leave-review-btn" id="toggleReviewFormBtn">Leave a Review</button>
+    </div>
+    
+    <div class="review-form-container reveal" id="reviewFormContainer">
+      <form id="reviewForm">
+        <div class="review-form-group">
+          <label>Your Name</label>
+          <input type="text" name="name" required placeholder="John Doe">
+        </div>
+        <div class="review-form-group">
+          <label>Rating</label>
+          <select name="rating" required>
+            <option value="5">★★★★★ (5/5)</option>
+            <option value="4">★★★★☆ (4/5)</option>
+            <option value="3">★★★☆☆ (3/5)</option>
+            <option value="2">★★☆☆☆ (2/5)</option>
+            <option value="1">★☆☆☆☆ (1/5)</option>
+          </select>
+        </div>
+        <div class="review-form-group">
+          <label>Your Review</label>
+          <textarea name="text" required placeholder="Tell us about your experience..."></textarea>
+        </div>
+        <button type="submit" class="btn" style="width:100%;">Submit Review</button>
+        <div id="reviewMsg" style="margin-top:10px; font-size:14px; font-weight:600; text-align:center;"></div>
+      </form>
+    </div>
   </div>
 </section>
 
@@ -833,24 +855,129 @@ document.getElementById('prevBtn').addEventListener('click', ()=> goToSlide(curr
 document.getElementById('nextBtn').addEventListener('click', ()=> goToSlide(current+1));
 let sliderInterval = setInterval(()=> goToSlide(current+1), 5000);
 
-/* ===== TESTIMONIALS ===== */
-const testSlides = document.querySelectorAll('.test-slide');
+/* ===== TESTIMONIALS (DYNAMIC) ===== */
+const testWrap = document.getElementById('testWrap');
 const testNav = document.getElementById('testNav');
 let tCurrent = 0;
-testSlides.forEach((s,i)=>{
-  const d = document.createElement('div');
-  d.className = 'dot' + (i===0?' active':'');
-  d.addEventListener('click', ()=> goToTest(i));
-  testNav.appendChild(d);
-});
-function goToTest(i){
-  testSlides[tCurrent].classList.remove('active');
-  testNav.children[tCurrent].classList.remove('active');
-  tCurrent = (i+testSlides.length)%testSlides.length;
-  testSlides[tCurrent].classList.add('active');
-  testNav.children[tCurrent].classList.add('active');
+let testTimer = null;
+
+async function loadReviews() {
+  try {
+    const res = await fetch('/api/reviews');
+    const reviews = await res.json();
+    renderReviews(reviews);
+  } catch (err) {
+    console.error('Failed to load reviews');
+  }
 }
-setInterval(()=> goToTest(tCurrent+1), 6000);
+
+function renderReviews(reviews) {
+  testWrap.innerHTML = '';
+  testNav.innerHTML = '';
+  clearInterval(testTimer);
+  
+  if(reviews.length === 0) {
+    testWrap.innerHTML = '<p style="color:var(--brown); font-style:italic;">No reviews yet. Be the first!</p>';
+    return;
+  }
+
+  reviews.forEach((r, i) => {
+    // Slide
+    const slide = document.createElement('div');
+    slide.className = 'test-slide' + (i === 0 ? ' active' : '');
+    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+    slide.innerHTML = `
+      <div class="stars">${stars}</div>
+      <p class="test-text">"${r.text}"</p>
+      <div class="test-person">
+        <img src="${r.image_url}" alt="${r.name}">
+        <div class="test-name">${r.name}</div><div class="test-role">${r.role || 'Guest'}</div>
+      </div>
+    `;
+    testWrap.appendChild(slide);
+
+    // Nav Dot
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goToTest(i));
+    testNav.appendChild(dot);
+  });
+
+  tCurrent = 0;
+  testTimer = setInterval(() => goToTest(tCurrent + 1), 6000);
+}
+
+function goToTest(i) {
+  const slides = testWrap.children;
+  const dots = testNav.children;
+  if(slides.length === 0) return;
+  
+  slides[tCurrent].classList.remove('active');
+  dots[tCurrent].classList.remove('active');
+  tCurrent = (i + slides.length) % slides.length;
+  slides[tCurrent].classList.add('active');
+  dots[tCurrent].classList.add('active');
+}
+
+// Load reviews when DOM is ready
+document.addEventListener('DOMContentLoaded', loadReviews);
+
+// Handle Review Submission
+const toggleReviewFormBtn = document.getElementById('toggleReviewFormBtn');
+const reviewFormContainer = document.getElementById('reviewFormContainer');
+const reviewForm = document.getElementById('reviewForm');
+const reviewMsg = document.getElementById('reviewMsg');
+
+toggleReviewFormBtn.addEventListener('click', () => {
+  reviewFormContainer.classList.toggle('active');
+  if(reviewFormContainer.classList.contains('active')) {
+    toggleReviewFormBtn.textContent = 'Cancel Review';
+  } else {
+    toggleReviewFormBtn.textContent = 'Leave a Review';
+    reviewMsg.textContent = '';
+  }
+});
+
+reviewForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = reviewForm.querySelector('button');
+  btn.disabled = true;
+  reviewMsg.textContent = 'Submitting...';
+  reviewMsg.style.color = 'var(--brown)';
+
+  const data = {
+    name: reviewForm.name.value,
+    rating: reviewForm.rating.value,
+    text: reviewForm.text.value
+  };
+
+  try {
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if(!res.ok) throw new Error('Submission failed');
+    
+    reviewMsg.style.color = '#2f7a3d';
+    reviewMsg.textContent = 'Review submitted successfully!';
+    reviewForm.reset();
+    
+    // Refresh reviews to show the new one
+    setTimeout(() => {
+      reviewFormContainer.classList.remove('active');
+      toggleReviewFormBtn.textContent = 'Leave a Review';
+      reviewMsg.textContent = '';
+      loadReviews();
+    }, 1500);
+
+  } catch(err) {
+    reviewMsg.style.color = '#b3261e';
+    reviewMsg.textContent = err.message || 'Error submitting review.';
+  } finally {
+    btn.disabled = false;
+  }
+});
 
 /* ===== LOCATIONS ===== */
 const locCards = document.querySelectorAll('.loc-card');

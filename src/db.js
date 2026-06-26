@@ -75,6 +75,69 @@ function initDb() {
         FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
       )
     `);
+
+    // 5. Reviews Table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        role TEXT,
+        rating INTEGER NOT NULL,
+        text TEXT NOT NULL,
+        image_url TEXT,
+        status TEXT DEFAULT 'approved',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `, (err) => {
+      if (!err) {
+        seedReviews();
+      }
+    });
+  });
+}
+
+// Seed default reviews if table is empty
+function seedReviews() {
+  db.get('SELECT COUNT(*) AS count FROM reviews', [], (err, row) => {
+    if (err) return;
+    if (row.count === 0) {
+      const defaultReviews = [
+        {
+          name: 'Hira Khan',
+          role: 'Food Blogger',
+          rating: 5,
+          text: 'The seekh kebabs here are unmatched — smoky, juicy, and full of flavor. The ambience makes it perfect for family dinners.',
+          image_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80'
+        },
+        {
+          name: 'Ahmed Raza',
+          role: 'Regular Guest',
+          rating: 5,
+          text: 'Best BBQ platter in the city, hands down. The staff are warm and the service is incredibly fast even on busy nights.',
+          image_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80'
+        },
+        {
+          name: 'Sara Malik',
+          role: 'Event Planner',
+          rating: 5,
+          text: 'We hosted a private dinner here and it was flawless. The shawarma wraps and biryani were the highlight of the night.',
+          image_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80'
+        }
+      ];
+
+      const insertSql = `
+        INSERT INTO reviews (name, role, rating, text, image_url, status)
+        VALUES (?, ?, ?, ?, ?, 'approved')
+      `;
+
+      db.serialize(() => {
+        const stmt = db.prepare(insertSql);
+        defaultReviews.forEach(r => {
+          stmt.run([r.name, r.role, r.rating, r.text, r.image_url]);
+        });
+        stmt.finalize();
+      });
+    }
   });
 }
 
@@ -121,14 +184,14 @@ function seedMenuItems() {
           name: 'Flame-Grilled Shawarma',
           description: 'Tender shaved rotisserie chicken, rolled in warm pita bread with pickled cucumbers and garlic toum sauce.',
           price: 450,
-          image_url: 'https://images.unsplash.com/photo-1662116765994-4e4cf1904797?auto=format&fit=crop&w=500&q=80',
+          image_url: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=500&q=80',
           category: 'Shawarma & Wraps'
         },
         {
           name: 'Spicy Lamb Wrap',
           description: 'Flame-roasted spiced lamb shoulder shredded and wrapped with chopped red onions, mint, and fire chilli sauce.',
           price: 650,
-          image_url: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=500&q=80',
+          image_url: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80',
           category: 'Shawarma & Wraps'
         },
         {
@@ -168,6 +231,94 @@ function seedMenuItems() {
 
 // Wrapper database functions returning promises
 const dbOperations = {
+  // --- ADMIN DASHBOARD ---
+  getAdminStats: () => {
+    return new Promise((resolve, reject) => {
+      const stats = {
+        totalRevenue: 0,
+        totalOrders: 0,
+        avgOrderValue: 0,
+        totalReservations: 0,
+        salesTrend: [],
+        branchStats: [],
+        topItems: []
+      };
+
+      db.serialize(() => {
+        // 1. Total Revenue, Orders, AOV (excluding cancelled)
+        db.get("SELECT COUNT(*) as count, SUM(total_price) as sum FROM orders WHERE status != 'cancelled'", [], (err, row) => {
+          if (!err && row) {
+            stats.totalOrders = row.count || 0;
+            stats.totalRevenue = row.sum || 0;
+            stats.avgOrderValue = stats.totalOrders > 0 ? Math.round(stats.totalRevenue / stats.totalOrders) : 0;
+          }
+        });
+
+        // 2. Total Reservations (excluding cancelled)
+        db.get("SELECT COUNT(*) as count FROM reservations WHERE status != 'cancelled'", [], (err, row) => {
+          if (!err && row) {
+            stats.totalReservations = row.count || 0;
+          }
+        });
+
+        // 3. Sales Trend (by day)
+        db.all("SELECT DATE(created_at) as date, SUM(total_price) as revenue FROM orders WHERE status != 'cancelled' GROUP BY DATE(created_at) ORDER BY date ASC LIMIT 7", [], (err, rows) => {
+          if (!err && rows) stats.salesTrend = rows;
+        });
+
+        // 4. Branch Stats
+        db.all("SELECT branch, SUM(total_price) as revenue FROM orders WHERE status != 'cancelled' GROUP BY branch", [], (err, rows) => {
+          if (!err && rows) stats.branchStats = rows;
+        });
+
+        // 5. Top Items
+        db.all(`
+          SELECT m.name, SUM(oi.quantity) as totalQty 
+          FROM order_items oi
+          JOIN orders o ON oi.order_id = o.id
+          JOIN menu_items m ON oi.menu_item_id = m.id
+          WHERE o.status != 'cancelled'
+          GROUP BY m.name
+          ORDER BY totalQty DESC
+          LIMIT 5
+        `, [], (err, rows) => {
+          if (!err && rows) stats.topItems = rows;
+          
+          // Resolve at the end of the serialized block
+          resolve(stats);
+        });
+      });
+    });
+  },
+
+  // --- REVIEWS ---
+  getReviews: () => {
+    return new Promise((resolve, reject) => {
+      const sql = "SELECT * FROM reviews WHERE status = 'approved' ORDER BY created_at DESC";
+      db.all(sql, [], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+  },
+
+  createReview: (review) => {
+    return new Promise((resolve, reject) => {
+      const { name, rating, text } = review;
+      // Use a generic avatar for new reviews since we don't have file upload yet
+      const image_url = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80';
+      const role = 'Guest';
+      const sql = `
+        INSERT INTO reviews (name, role, rating, text, image_url, status)
+        VALUES (?, ?, ?, ?, ?, 'approved')
+      `;
+      db.run(sql, [name, role, rating, text, image_url], function (err) {
+        if (err) reject(err);
+        else resolve({ id: this.lastID, name, role, rating, text, image_url, status: 'approved' });
+      });
+    });
+  },
+
   // --- RESERVATIONS ---
   createReservation: (reservation) => {
     return new Promise((resolve, reject) => {

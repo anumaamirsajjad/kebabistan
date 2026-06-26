@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('./db');
+const sms = require('./sms');
 
 // Authentication Helper
 const getExpectedToken = () => {
@@ -38,6 +39,45 @@ router.post('/auth/login', (req, res) => {
   }
 });
 
+// --- ADMIN STATS ENDPOINT ---
+router.get('/admin/stats', requireAdmin, async (req, res) => {
+  try {
+    const stats = await db.getAdminStats();
+    res.json(stats);
+  } catch (err) {
+    console.error('Stats error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch dashboard stats.' });
+  }
+});
+
+// --- REVIEWS ENDPOINTS ---
+router.get('/reviews', async (req, res) => {
+  try {
+    const list = await db.getReviews();
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch reviews.' });
+  }
+});
+
+router.post('/reviews', async (req, res) => {
+  try {
+    const { name, rating, text } = req.body;
+    if (!name || !rating || !text) {
+      return res.status(400).json({ error: 'Name, rating, and text are required.' });
+    }
+    const numRating = parseInt(rating, 10);
+    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5.' });
+    }
+    const created = await db.createReview({ name: name.trim(), rating: numRating, text: text.trim() });
+    res.status(201).json(created);
+  } catch (err) {
+    console.error('Review error:', err.message);
+    res.status(500).json({ error: 'Failed to save review.' });
+  }
+});
+
 // --- RESERVATIONS ENDPOINTS ---
 router.post('/reservations', async (req, res) => {
   try {
@@ -71,6 +111,11 @@ router.post('/reservations', async (req, res) => {
     };
 
     const savedReservation = await db.createReservation(newReservation);
+    
+    // Send SMS confirmation
+    const smsMsg = `Hi ${savedReservation.name}, your reservation for ${savedReservation.guests} at Kebabistan on ${savedReservation.date} at ${savedReservation.time} is confirmed!`;
+    await sms.sendSMS(savedReservation.phone, smsMsg).catch(console.error);
+
     res.status(201).json(savedReservation);
   } catch (err) {
     console.error('Reservation error:', err.message);
@@ -215,6 +260,11 @@ router.post('/orders', async (req, res) => {
     };
 
     const savedOrder = await db.createOrder(newOrder, orderItems);
+    
+    // Send SMS confirmation
+    const smsMsg = `Hi ${savedOrder.customer_name}, your order at Kebabistan is confirmed! Total: Rs.${savedOrder.total_price}. Type: ${savedOrder.type}.`;
+    await sms.sendSMS(savedOrder.customer_phone, smsMsg).catch(console.error);
+
     res.status(201).json(savedOrder);
   } catch (err) {
     console.error('Order submission error:', err.message);
