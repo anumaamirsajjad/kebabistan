@@ -1,16 +1,20 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const dbPath = path.join(__dirname, 'kebabistan.db');
+require('dotenv').config();
+const { Pool } = require('pg');
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error:', err.message);
-    return;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
   }
-  
-  db.run("UPDATE menu_items SET image_url = 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80' WHERE name = 'Spicy Lamb Wrap'", function(err) {
-    if (err) console.error(err.message);
-    else console.log(`Updated ${this.changes} rows in db.`);
-    db.close();
-  });
 });
+
+pool.query("UPDATE menu_items SET image_url = 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=80' WHERE name = 'Spicy Lamb Wrap'")
+  .then(res => {
+    console.log(`Updated ${res.rowCount} rows in db.`);
+  })
+  .catch(err => {
+    console.error(err.message);
+  })
+  .finally(() => {
+    pool.end();
+  });
