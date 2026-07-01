@@ -23,11 +23,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Start listening
-app.listen(PORT, () => {
-  console.log(`=================================================`);
-  console.log(` KEBABISTAN BACKEND RUNNING ON PORT ${PORT}`);
-  console.log(` Access Landing Page: http://localhost:${PORT}`);
-  console.log(` Access Admin Panel:  http://localhost:${PORT}/admin.html`);
-  console.log(`=================================================`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`=================================================`);
+    console.log(` KEBABISTAN BACKEND RUNNING ON PORT ${PORT}`);
+    console.log(` Access Landing Page: http://localhost:${PORT}`);
+    console.log(` Access Admin Panel:  http://localhost:${PORT}/admin.html`);
+    console.log(`=================================================`);
+  });
+}
+
+module.exports = app;
