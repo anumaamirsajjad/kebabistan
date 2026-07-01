@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('./db');
 const sms = require('./sms');
+const email = require('./email');
 
 // Authentication Helper
 const getExpectedToken = () => {
@@ -81,9 +82,9 @@ router.post('/reviews', async (req, res) => {
 // --- RESERVATIONS ENDPOINTS ---
 router.post('/reservations', async (req, res) => {
   try {
-    const { name, phone, date, time, guests, location } = req.body;
+    const { name, phone, email: customerEmail, date, time, guests, location } = req.body;
 
-    if (!name || !phone || !date || !time || !guests || !location) {
+    if (!name || !phone || !customerEmail || !date || !time || !guests || !location) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
@@ -96,6 +97,11 @@ router.post('/reservations', async (req, res) => {
       return res.status(400).json({ error: 'Please enter a valid phone number.' });
     }
 
+    const emailValue = String(customerEmail).trim();
+    if (!/^\S+@\S+\.\S+$/.test(emailValue)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
     if (date < todayStr) {
       return res.status(400).json({ error: 'Cannot make reservations for past dates.' });
@@ -104,6 +110,7 @@ router.post('/reservations', async (req, res) => {
     const newReservation = {
       name: name.trim(),
       phone: phone.trim(),
+      email: emailValue,
       date,
       time,
       guests: numGuests,
@@ -116,7 +123,34 @@ router.post('/reservations', async (req, res) => {
     const smsMsg = `Hi ${savedReservation.name}, your reservation for ${savedReservation.guests} at Kebabistan on ${savedReservation.date} at ${savedReservation.time} is confirmed!`;
     await sms.sendSMS(savedReservation.phone, smsMsg).catch(console.error);
 
-    res.status(201).json(savedReservation);
+    // Send email confirmation
+    const reservationEmailSubject = `Booking Confirmed - Kebabistan #${savedReservation.id}`;
+    const reservationEmailBody = [
+      `Hi ${savedReservation.name},`,
+      '',
+      'Your reservation is confirmed at Kebabistan.',
+      `Booking ID: #${savedReservation.id}`,
+      `Date: ${savedReservation.date}`,
+      `Time: ${savedReservation.time}`,
+      `Guests: ${savedReservation.guests}`,
+      `Location: ${savedReservation.location}`,
+      '',
+      'Thank you for choosing Kebabistan.'
+    ].join('\n');
+
+    let emailSent = true;
+    let emailError = null;
+    await email.sendEmail({
+      to: savedReservation.email,
+      subject: reservationEmailSubject,
+      text: reservationEmailBody
+    }).catch((err) => {
+      emailSent = false;
+      emailError = err.message;
+      console.error('Reservation email error:', err.message);
+    });
+
+    res.status(201).json({ ...savedReservation, email_sent: emailSent, email_error: emailError });
   } catch (err) {
     console.error('Reservation error:', err.message);
     res.status(500).json({ error: 'Failed to save reservation.' });
@@ -203,15 +237,20 @@ router.patch('/menu/:id', requireAdmin, async (req, res) => {
 // --- ORDERS ENDPOINTS ---
 router.post('/orders', async (req, res) => {
   try {
-    const { customer_name, customer_phone, type, address, branch, items } = req.body;
+    const { customer_name, customer_phone, customer_email, type, address, branch, items } = req.body;
 
     // Validation
-    if (!customer_name || !customer_phone || !type || !branch || !items || !Array.isArray(items) || items.length === 0) {
+    if (!customer_name || !customer_phone || !customer_email || !type || !branch || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Missing required order details.' });
     }
 
     if (type === 'delivery' && !address) {
       return res.status(400).json({ error: 'Delivery address is required for delivery orders.' });
+    }
+
+    const customerEmailValue = String(customer_email).trim();
+    if (!/^\S+@\S+\.\S+$/.test(customerEmailValue)) {
+      return res.status(400).json({ error: 'Please provide a valid customer email.' });
     }
 
     // Verify prices and availability from DB
@@ -253,6 +292,7 @@ router.post('/orders', async (req, res) => {
     const newOrder = {
       customer_name: customer_name.trim(),
       customer_phone: customer_phone.trim(),
+      customer_email: customerEmailValue,
       type,
       address: type === 'delivery' ? address.trim() : null,
       branch: branch.trim(),
@@ -265,7 +305,40 @@ router.post('/orders', async (req, res) => {
     const smsMsg = `Hi ${savedOrder.customer_name}, your order at Kebabistan is confirmed! Total: Rs.${savedOrder.total_price}. Type: ${savedOrder.type}.`;
     await sms.sendSMS(savedOrder.customer_phone, smsMsg).catch(console.error);
 
-    res.status(201).json(savedOrder);
+    // Send email confirmation
+    const orderEmailSubject = `Order Confirmed - Kebabistan #${savedOrder.id}`;
+    const orderEmailBody = [
+      `Hi ${savedOrder.customer_name},`,
+      '',
+      'Your order has been confirmed at Kebabistan.',
+      `Order ID: #${savedOrder.id}`,
+      `Type: ${savedOrder.type}`,
+      `Branch: ${savedOrder.branch}`,
+      savedOrder.address ? `Address: ${savedOrder.address}` : 'Address: Pickup at branch',
+      `Total: Rs.${savedOrder.total_price}`,
+      '',
+      'Items:',
+      ...orderItems.map((item) => {
+        const menuItem = menuMap[item.menu_item_id];
+        return `- ${menuItem.name} x ${item.quantity}`;
+      }),
+      '',
+      'Thank you for ordering from Kebabistan.'
+    ].join('\n');
+
+    let emailSent = true;
+    let emailError = null;
+    await email.sendEmail({
+      to: savedOrder.customer_email,
+      subject: orderEmailSubject,
+      text: orderEmailBody
+    }).catch((err) => {
+      emailSent = false;
+      emailError = err.message;
+      console.error('Order email error:', err.message);
+    });
+
+    res.status(201).json({ ...savedOrder, email_sent: emailSent, email_error: emailError });
   } catch (err) {
     console.error('Order submission error:', err.message);
     res.status(500).json({ error: 'Failed to place order.' });

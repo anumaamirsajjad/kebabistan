@@ -560,6 +560,9 @@
         <div class="form-group"><label>Phone</label><input type="tel" name="phone" required placeholder="03xx-xxxxxxx"></div>
       </div>
       <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" name="email" required placeholder="you@example.com"></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label>Date</label><input type="date" name="date" required id="resDate"></div>
         <div class="form-group"><label>Time</label><input type="time" name="time" required value="19:00"></div>
       </div>
@@ -785,6 +788,11 @@
         <label>Phone Number</label>
         <input type="tel" id="orderPhone" required placeholder="03xx-xxxxxxx">
       </div>
+
+      <div class="cart-form-group">
+        <label>Email Address</label>
+        <input type="email" id="orderEmail" required placeholder="you@example.com">
+      </div>
     </div>
   </div>
   <div class="cart-drawer-footer">
@@ -1008,6 +1016,7 @@ resForm.addEventListener('submit', async (e)=>{
   const data = {
     name: formData.get('name'),
     phone: formData.get('phone'),
+    email: formData.get('email'),
     date: formData.get('date'),
     time: formData.get('time'),
     guests: parseInt(formData.get('guests')),
@@ -1027,7 +1036,7 @@ resForm.addEventListener('submit', async (e)=>{
     }
     
     formMsg.style.color = '#2f7a3d';
-    formMsg.textContent = `✓ Reservation request received! We'll confirm via SMS shortly. Booking Ref: #${result.id}`;
+    formMsg.textContent = `✓ Reservation confirmed. A confirmation email has been sent. Booking Ref: #${result.id}`;
     resForm.reset();
     resDate.min = new Date().toISOString().split('T')[0];
   }catch(err){
@@ -1067,6 +1076,7 @@ const orderBranch = document.getElementById('orderBranch');
 const orderAddress = document.getElementById('orderAddress');
 const orderName = document.getElementById('orderName');
 const orderPhone = document.getElementById('orderPhone');
+const orderEmail = document.getElementById('orderEmail');
 
 // Fetch menu items from backend
 async function loadMenu() {
@@ -1261,10 +1271,11 @@ placeOrderBtn.addEventListener('click', async () => {
   
   const name = orderName.value.trim();
   const phone = orderPhone.value.trim();
+  const customerEmail = orderEmail.value.trim();
   const branch = orderBranch.value;
   const address = orderAddress.value.trim();
 
-  if (!name || !phone || (fulfillmentType === 'delivery' && !address)) {
+  if (!name || !phone || !customerEmail || (fulfillmentType === 'delivery' && !address)) {
     cartMsg.style.color = '#ff1744';
     cartMsg.textContent = 'Please fill out all required checkout fields.';
     return;
@@ -1273,6 +1284,7 @@ placeOrderBtn.addEventListener('click', async () => {
   const payload = {
     customer_name: name,
     customer_phone: phone,
+    customer_email: customerEmail,
     type: fulfillmentType,
     address: fulfillmentType === 'delivery' ? address : null,
     branch: branch,
@@ -1295,12 +1307,13 @@ placeOrderBtn.addEventListener('click', async () => {
     if (!res.ok) throw new Error(result.error || 'Checkout failed');
 
     cartMsg.style.color = '#81c784';
-    cartMsg.textContent = `✓ Order placed successfully! Ref ID: #${result.id}. Preparing shortly.`;
+    cartMsg.textContent = `✓ Order placed successfully! Ref ID: #${result.id}. A confirmation email has been sent.`;
     
     // Clear forms and cart state
     cart = [];
     orderName.value = '';
     orderPhone.value = '';
+    orderEmail.value = '';
     orderAddress.value = '';
     
     setTimeout(() => {

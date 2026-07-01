@@ -25,6 +25,7 @@ async function initDb() {
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         phone TEXT NOT NULL,
+        email TEXT,
         date TEXT NOT NULL,
         time TEXT NOT NULL,
         guests INTEGER NOT NULL,
@@ -33,6 +34,7 @@ async function initDb() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    await pool.query('ALTER TABLE reservations ADD COLUMN IF NOT EXISTS email TEXT');
 
     // 2. Menu Items Table
     await pool.query(`
@@ -54,6 +56,7 @@ async function initDb() {
         id SERIAL PRIMARY KEY,
         customer_name TEXT NOT NULL,
         customer_phone TEXT NOT NULL,
+        customer_email TEXT,
         type TEXT NOT NULL,
         address TEXT,
         branch TEXT NOT NULL,
@@ -62,6 +65,7 @@ async function initDb() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    await pool.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email TEXT');
 
     // 4. Order Items Table
     await pool.query(`
@@ -232,12 +236,12 @@ const dbOperations = {
   },
 
   createReservation: async (reservation) => {
-    const { name, phone, date, time, guests, location } = reservation;
+    const { name, phone, email, date, time, guests, location } = reservation;
     const res = await pool.query(`
-      INSERT INTO reservations (name, phone, date, time, guests, location, status)
-      VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+      INSERT INTO reservations (name, phone, email, date, time, guests, location, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
       RETURNING id
-    `, [name, phone, date, time, guests, location]);
+    `, [name, phone, email, date, time, guests, location]);
     return { id: res.rows[0].id, ...reservation, status: 'pending' };
   },
 
@@ -316,13 +320,13 @@ const dbOperations = {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
-      const { customer_name, customer_phone, type, address, branch, total_price } = order;
+      const { customer_name, customer_phone, customer_email, type, address, branch, total_price } = order;
       
       const orderRes = await client.query(`
-        INSERT INTO orders (customer_name, customer_phone, type, address, branch, total_price, status)
-        VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+        INSERT INTO orders (customer_name, customer_phone, customer_email, type, address, branch, total_price, status)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
         RETURNING id
-      `, [customer_name, customer_phone, type, address, branch, total_price]);
+      `, [customer_name, customer_phone, customer_email, type, address, branch, total_price]);
       
       const orderId = orderRes.rows[0].id;
       
