@@ -4,9 +4,18 @@ Kebabistan is a modern, full-stack web application designed for a premium kebab 
 🛠️ Tech Stack
 Frontend: Vanilla HTML, CSS, and JavaScript. It uses GSAP (GreenSock) for smooth scroll animations and parallax effects.
 Backend: Node.js with the Express.js framework handling API requests.
-Database: SQLite.
+Database: PostgreSQL (Supabase).
 🗄️ The Database
-The database is entirely local. It uses a single lightweight file named kebabistan.db located in your project root. When you run the server, src/db.js automatically checks if the tables exist, and if not, creates them and seeds them with default data (like the menu items and reviews).
+The app uses PostgreSQL via DATABASE_URL (Supabase supported). When you run the server, src/db.js checks if tables exist and creates/seeds defaults (menu and reviews) when needed.
+
+🌐 Vercel Frontend + Separate Backend
+If your frontend is deployed on Vercel and backend is deployed elsewhere, set your backend URL in public/config.js:
+
+window.APP_CONFIG = {
+	apiBaseUrl: "https://your-backend-domain.com"
+};
+
+This makes frontend calls like /api/menu, /api/orders, and /api/reservations target your backend domain in production.
 
 🚀 How to View It
 Run the command npm run dev (or npm start) in your terminal from the project folder.
