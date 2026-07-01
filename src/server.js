@@ -55,6 +55,15 @@ app.get('/api/_diag/db', async (req, res) => {
   });
 });
 
+app.get('/api/_diag/db-connect', async (req, res) => {
+  try {
+    const result = await require('./db').testConnection();
+    res.json({ ok: true, result });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
 // Fallback to index.html for undefined frontend routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));

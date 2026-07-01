@@ -395,6 +395,11 @@ const dbOperations = {
     const res = await pool.query('UPDATE orders SET status = $1 WHERE id = $2', [status, id]);
     if (res.rowCount === 0) throw new Error('Order not found');
     return { id, status };
+  },
+
+  testConnection: async () => {
+    const res = await pool.query('SELECT 1 AS ok');
+    return res.rows[0];
   }
 };
 
